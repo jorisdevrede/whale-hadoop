@@ -1,0 +1,42 @@
+- name: Hadoop Container - create interactive group
+  group: name=ubuntu state=present
+  
+- name: Hadoop Container - create interactive user
+  user: name=ubuntu group=ubuntu state=present
+  
+- name: Hadoop Container - check interactive home dir
+  file: path=/home/ubuntu state=directory owner=ubuntu group=ubuntu
+
+- name: Hadoop Container - download hadoop
+  get_url:
+    url: "http://archive.apache.org/dist/hadoop/common/hadoop-2.7.1/hadoop-2.7.1.tar.gz"
+    dest: /home/ubuntu
+    owner: ubuntu
+    group: ubuntu
+
+- name: Hadoop Container - get etc dir
+  unarchive: src=/home/ubuntu/hadoop-2.7.1.tar.gz dest=/tmp remote_src=true
+
+- name: Hadoop Container - create config directory
+  file: path="/opt/docker/containers/hadoop/etc/hadoop" state=directory mode=0755 owner=root group=root
+
+- name: Hadoop Container - copy etc dir
+  command: cp -r -n /tmp/hadoop-2.7.1/etc/hadoop /opt/docker/containers/hadoop/etc
+
+- name: Hadoop Container - update core site
+  template: src=core.j2 dest=/opt/docker/containers/hadoop/etc/hadoop/core-site.xml
+  
+- name: Hadoop Container - update hdfs site
+  template: src=hdfs.j2 dest=/opt/docker/containers/hadoop/etc/hadoop/hdfs-site.xml
+
+- name: Hadoop Container - install as service
+  template: src=systemd.j2 dest="/lib/systemd/system/docker-hadoop.service"
+
+- name: Hadoop Container - reload systemd
+  command: systemctl daemon-reload
+  
+- name: Hadoop Container - start service
+  service: name="docker-hadoop.service" state=restarted enabled=yes
+  
+- name: Hadoop Container - check container
+  wait_for: host="172.17.0.2" port=8020
