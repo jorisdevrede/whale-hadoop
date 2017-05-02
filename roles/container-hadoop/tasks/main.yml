@@ -39,4 +39,4 @@
   service: name="docker-hadoop.service" state=restarted enabled=yes
   
 - name: Hadoop Container - check container
-  wait_for: host="172.17.0.2" port=9000
+  wait_for: host="172.17.0.2" port=9000 delay=60 timeout=600
