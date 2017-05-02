@@ -1,0 +1,12 @@
+[Unit]
+Description=Hadoop Docker container
+Requires=docker.service
+After=docker.service
+
+[Service]
+ExecStart=/usr/bin/docker run --name hadoop -v /opt/docker/containers/hadoop/etc/hadoop:/usr/local/hadoop/etc/hadoop sequenceiq/hadoop-docker:2.7.1
+ExecStop=/usr/bin/docker stop -t 2 hadoop
+ExecStopPost=/usr/bin/docker rm -f hadoop
+
+[Install]
+WantedBy=default.target
